@@ -11,9 +11,13 @@
 
 #define MSG_LEN 100
 
+const int INVALID_SOCKET = -1;
+const int SOCKET_ERROR	 = -1;
+
+
 using namespace std;
 
-typedef struct class 
+typedef struct cli
 {
 	int id; /**< Client ID*/
 	int sockfd;  /**< Socket File Descriptor*/
@@ -39,7 +43,7 @@ int main(int argc, char** argv)
 	if(server == NULL)
 	{
 		perror("[-] No such host present. \n");
-		return -3; 
+		return -3;
 	}
 
 	cout << "Starting client..." << endl;
@@ -56,18 +60,18 @@ int main(int argc, char** argv)
 
 	struct sockaddr_in server_addr; /**< Server Address*/
 	bzero((char *)&server_addr, sizeof(server_addr)); // Reset
-	server_addr.sin_family = AF_INET; 
+	server_addr.sin_family = AF_INET;
 
 	bcopy(
-			(char *)server->h_addr, 
-			(char *)&server_addr.sin_addr.s_addr, 
+			(char *)server->h_addr,
+			(char *)&server_addr.sin_addr.s_addr,
 			server->h_length
 		); // Copy the server address
 
 	server_addr.sin_port = htons(port_no); // Setting the port number
 
 	/** Attempting to connect*/
-	cout << "Connecting to " << (char *)server->h_addr << " : " << port_no << endl; 
+	cout << "Connecting to " << (char *)server->h_addr << " : " << port_no << endl;
 	if(connect(client.sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
 	{
 		perror("[-] Error connecting to server");
@@ -77,12 +81,12 @@ int main(int argc, char** argv)
 	cout << "Connected! " << endl;
 	std::string sent_message = ""; /**< String with message to send*/
 	int ret = 0; /**< Return Send value*/
-	recv(client.sockfd, client.received_message, MSG_LEN, 0);
-	message = client.received_message;
+	recv(client.sockfd, client.message, MSG_LEN, 0);
+	string message = client.message;
 
 	if(message != "Server is full")
 	{
-		client.id = atoi(client.received_message); // First message is the ID
+		client.id = atoi(client.message); // First message is the ID
 
 		while(1)
 		{
@@ -97,22 +101,22 @@ int main(int argc, char** argv)
 				break;
 			}
 
-			if(strcmp(sent_message, ":exit") == 0)
+			if(strcmp(sent_message.c_str(), ":exit") == 0)
 			{
 				perror("[-] Disconnected from server \n");
 				exit(1);
 			}
 
-			if(recv(client.sockfd, client.received_message, MSG_LEN, 0) < 0)
+			if(recv(client.sockfd, client.message, MSG_LEN, 0) < 0)
 			{
 				perror("[-] Error receiving data. \n");
 			}
 			else
 			{
-				cout << "Hashed Value: " << client.received_message << endl;
+				cout << "Hashed Value: " << client.message << endl;
 			}
 
-			bzero(client.received_message, MSG_LEN);
+			bzero(client.message, MSG_LEN);
 			sent_message = "";
 		}
 
@@ -120,7 +124,7 @@ int main(int argc, char** argv)
 
 	else
 	{
-		cout << client.received_message << endl;
+		cout << client.message << endl;
 	}
 
 

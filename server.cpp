@@ -1,14 +1,16 @@
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
 #include <string>
 #include <cstring>
+#include <vector>
 #include <thread>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
 #define MSG_LEN 100
-#define MAX_CLIENTS 5
+#define MAX_CLIENTS 3
 
 using namespace std;
 
@@ -25,7 +27,7 @@ struct client_type
 
 int ClientProcessor(client_type &new_client, std::vector<client_type> &client_array, std::thread &client_thread)
 {
-	char charMsg[MSG_LEN] = ""; 
+	char charMsg[MSG_LEN] = "";
 	std::string msg = "";
 
 	while(1)
@@ -79,12 +81,12 @@ int main(int argc, char** argv)
 
 	/** Creating a socket */
 	cout << "Creating a server socket ..." << endl;
-	sockfd = socket(AF_INET, SOCK_STREAM, 0); /**< Socket File Descriptor*/
+	int sockfd = socket(AF_INET, SOCK_STREAM, 0); /**< Socket File Descriptor*/
 
 	if(sockfd < 0)
 	{
 		perror("[-] ERROR Opening Socket \n");
-		return -2; 
+		return -2;
 	}
 
 	/** Setting up the address structure */
@@ -102,7 +104,7 @@ int main(int argc, char** argv)
 	}
 
 
-	listen(sockfd, 5); 
+	listen(sockfd, 5);
 	char local_host[INET_ADDRSTRLEN];
     inet_ntop(AF_INET, &(server_addr.sin_addr), local_host, INET_ADDRSTRLEN);
     cout << "Listening on " <<  local_host << " : " << port_no << endl;
@@ -139,9 +141,9 @@ int main(int argc, char** argv)
 			// If a client hasn't been added to the list of clients
 			if(client[i].sockfd == INVALID_SOCKET && ID_Assign == -1)
 			{
-				client[i].sockfd = incoming; 
-				client[i].id = i; 
-				ID_Assign = i; 
+				client[i].sockfd = Incoming;
+				client[i].id = i;
+				ID_Assign = i;
 			}
 
 			if(client[i].sockfd != INVALID_SOCKET)
@@ -155,22 +157,22 @@ int main(int argc, char** argv)
 			cout << "Connected! There are " << NumClients << " clients in this server." << endl;
 
 			// Send the ID to the new client
-			msg = to_string(client[ID_Assign].id); 
-			send(client[ID_Assign].sockfd, msg.c_str(), strlen(msg.c_str()));
+			msg = to_string(client[ID_Assign].id);
+			send(client[ID_Assign].sockfd, msg.c_str(), strlen(msg.c_str()), 0);
 
-			client_threads[temp_id] = std::thread(
-				ClientProcessor, std::ref(client[ID_Assign]), 
+			client_threads[ID_Assign] = std::thread(
+				ClientProcessor, std::ref(client[ID_Assign]),
 								 std::ref(client),
 								 std::ref(client_threads[ID_Assign]));
 		}
 
-		else // Server is full 
+		else // Server is full
 		{
 			msg = "Server is full";
 			send(Incoming, msg.c_str(), strlen(msg.c_str()), 0);
 
 			//Get the address of remote host
-			char remote_host[INET_ADDRSTRLEN]; 
+			char remote_host[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, &(client_addr.sin_addr), remote_host, INET_ADDRSTRLEN);
 
 			cout << "Connection rejected" << endl;
