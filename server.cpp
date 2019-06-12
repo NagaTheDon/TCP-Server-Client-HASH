@@ -44,32 +44,24 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 					msg = "Client ID: "+ to_string(new_client.id) + " --> " + charMsg ;
           cout << msg << endl;
           SentFlag = send(new_client.sockfd, msg.c_str(), strlen(msg.c_str()), 0);
+          continue;
 				}
-        else
-        {
-          retries--;
 
-          if(retries <= 0)
-          {
-            retries = 10;
-            break;
-          }
-        }
+      }
+      retries--;
+      if(retries <= 0 || SentFlag == SOCKET_ERROR)
+      {
+        retries = 10;
+        cout << "Client #" << to_string(new_client.id) << " disconnected" << endl;
+        close(new_client.sockfd);
+        close(client_array[new_client.id].sockfd);
+        client_array[new_client.id].sockfd = INVALID_SOCKET;
+        break;
+      }
 
-
-			}
 
 		}
 
-		else
-		{
-			cout << "Client #" << to_string(new_client.id) << " disconnected" << endl;
-			close(new_client.sockfd);
-			close(client_array[new_client.id].sockfd);
-			client_array[new_client.id].sockfd = INVALID_SOCKET;
-
-			break;
-		}
 	}
 
 
@@ -148,6 +140,7 @@ int main(int argc, char** argv)
 		}
 
 		ID_Assign = -1;
+    NumClients = -1;
 
 
 		for(int i = 0; i < MAX_CLIENTS; i++)
@@ -166,6 +159,7 @@ int main(int argc, char** argv)
 			}
 		}
 
+    cout << "ID_Assign after for loop " << ID_Assign <<endl;
 		if(ID_Assign != -1) // If max. clients are not reached
 		{
 			cout << "Connected! There are " << NumClients << " clients in this server." << endl;
