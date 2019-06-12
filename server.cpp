@@ -11,7 +11,7 @@
 #include "sha256.h"
 
 #define MSG_LEN 100
-#define MAX_CLIENTS 2
+#define MAX_CLIENTS 20
 
 using namespace std;
 
@@ -44,11 +44,11 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 				if(strcmp("", charMsg) != 0)
 				{
 					// msg = "Client ID: "+ to_string(new_client.id) + " --> " + charMsg ;
-          msg = to_string(charMsg);
+          msg = string(charMsg);
           for(int i = 0; i < 10000; i++)
           {msg = sha256(msg);}
 
-          cout << msg << endl;
+          cout << "[*] Client #" << to_string(new_client.id) << ": " << msg << endl;
           SentFlag = send(new_client.sockfd, msg.c_str(), strlen(msg.c_str()), 0);
           continue;
 				}
@@ -58,7 +58,7 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
       if(retries <= 0 || SentFlag == SOCKET_ERROR)
       {
         retries = 10;
-        cout << "Client #" << to_string(new_client.id) << " disconnected" << endl;
+        cout << "[*] Client #" << to_string(new_client.id) << " disconnected" << endl;
         close(new_client.sockfd);
         close(client_array[new_client.id].sockfd);
         client_array[new_client.id].sockfd = INVALID_SOCKET;
@@ -72,7 +72,6 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 
 
 	client_thread.detach();
-  cout << "Thread detached" << endl;
 	return 0;
 }
 
@@ -94,6 +93,15 @@ int main(int argc, char** argv)
 	/** Creating a socket */
 	cout << "Creating a server socket ..." << endl;
 	int sockfd = socket(AF_INET, SOCK_STREAM, 0); /**< Socket File Descriptor*/
+
+
+// Make it able to reuse the ports
+  int yes = 1;
+   if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) == -1)
+   {
+     printf("[-] Unable to set socket options");
+     exit(1);
+   }
 
 	if(sockfd < 0)
 	{
@@ -165,10 +173,9 @@ int main(int argc, char** argv)
 			}
 		}
 
-    cout << "ID_Assign after for loop " << ID_Assign <<endl;
 		if(ID_Assign != -1) // If max. clients are not reached
 		{
-			cout << "Connected! There are " << NumClients << " clients in this server." << endl;
+			cout << "[+] Connected! There are " << NumClients + 1 << " clients in this server. MAX: " << MAX_CLIENTS  << endl;
 
 			// Send the ID to the new client
 			msg = to_string(client[ID_Assign].id);
@@ -189,7 +196,7 @@ int main(int argc, char** argv)
 			char remote_host[INET_ADDRSTRLEN];
 			inet_ntop(AF_INET, &(client_addr.sin_addr), remote_host, INET_ADDRSTRLEN);
 
-			cout << "Connection rejected" << endl;
+			cout << "[-] Connection rejected - Server full! Enter :exit on clients to remove connection. " << endl;
 		}
 
 	}
