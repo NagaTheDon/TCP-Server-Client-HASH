@@ -10,7 +10,7 @@
 #include <arpa/inet.h>
 
 #define MSG_LEN 100
-#define MAX_CLIENTS 3
+#define MAX_CLIENTS 2
 
 using namespace std;
 
@@ -29,6 +29,7 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 {
 	char charMsg[MSG_LEN] = "";
 	std::string msg = "";
+  int retries = 10;
 
 	while(1)
 	{
@@ -41,11 +42,21 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 				if(strcmp("", charMsg) != 0)
 				{
 					msg = "Client ID: "+ to_string(new_client.id) + " --> " + charMsg ;
+          cout << msg << endl;
+          SentFlag = send(new_client.sockfd, msg.c_str(), strlen(msg.c_str()), 0);
 				}
+        else
+        {
+          retries--;
 
-				cout << msg << endl;
+          if(retries <= 0)
+          {
+            retries = 10;
+            break;
+          }
+        }
 
-				SentFlag = send(new_client.sockfd, msg.c_str(), strlen(msg.c_str()), 0);
+
 			}
 
 		}
@@ -60,7 +71,10 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 			break;
 		}
 	}
+
+
 	client_thread.detach();
+  cout << "Thread detached" << endl;
 	return 0;
 }
 

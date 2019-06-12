@@ -93,6 +93,12 @@ int main(int argc, char** argv)
 			cout << "Enter a string to HASH: ";
 			getline(cin, sent_message);
 
+			if(strcmp(sent_message.c_str(), ":exit") == 0)
+			{
+				perror("[-] Disconnected from server \n");
+				break;
+			}
+
 			ret = send(client.sockfd, sent_message.c_str(), strlen(sent_message.c_str()), 0);
 
 			if(ret <= 0)
@@ -101,11 +107,7 @@ int main(int argc, char** argv)
 				break;
 			}
 
-			if(strcmp(sent_message.c_str(), ":exit") == 0)
-			{
-				perror("[-] Disconnected from server \n");
-				exit(1);
-			}
+
 
 			if(recv(client.sockfd, client.message, MSG_LEN, 0) < 0)
 			{
