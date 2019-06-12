@@ -44,7 +44,9 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 				if(strcmp("", charMsg) != 0)
 				{
 					// msg = "Client ID: "+ to_string(new_client.id) + " --> " + charMsg ;
-          msg = sha256(charMsg);
+          msg = to_string(charMsg);
+          for(int i = 0; i < 10000; i++)
+          {msg = sha256(msg);}
 
           cout << msg << endl;
           SentFlag = send(new_client.sockfd, msg.c_str(), strlen(msg.c_str()), 0);
