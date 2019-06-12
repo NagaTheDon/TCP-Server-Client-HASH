@@ -69,14 +69,19 @@ int main(int argc, char** argv)
     cout << "Listening on " <<  local_host << " : " << port_no << endl;
 
 	std::vector<client_type> client(MAX_CLIENTS); /**< Clients connected to this server*/
-    // Initialising the client llist
+    // Initialising the client list
 	for(int i = 0; i < MAX_CLIENTS; i++)
 	{
 		client[i] = (client_type) {-1, INVALID_SOCKET};
 	}
 
 	struct sockaddr_in client_addr; /**< Client Address*/
-	socklen_t Client_len = sizeof(client_addr);
+	socklen_t Client_len = sizeof(client_addr);/**< Client Address Length*/
+
+	int NumClients = 0; /**< Total Number of Clients */
+	int ID_Assign; /**< ID Assigner*/
+	thread client_threads[MAX_CLIENTS]; /**< Threads of the clients */
+	string msg = "";
 
 	while (1)
 	{
@@ -86,6 +91,44 @@ int main(int argc, char** argv)
 		if(Incoming == INVALID_SOCKET) {
 			continue;
 		}
+
+		ID_Assign = -1;
+
+		for(int i = 0; i < MAX_CLIENTS; i++)
+		{
+			// If a client hasn't been added to the list of clients
+			if(client[i].sockfd == INVALID_SOCKET && ID_Assign == -1)
+			{
+				client[i].sockfd = incoming; 
+				client[i].id = i; 
+				ID_Assign = i; 
+			}
+
+			if(client[i].sockfd != INVALID_SOCKET)
+			{
+				NumClients++;
+			}
+		}
+
+		if(ID_Assign != -1) // If max. clients are not reached
+		{
+			char remote_host[INET_ADDRSTRLEN];
+		}
+
+		else // Server is full 
+		{
+			msg = "Server is full";
+			send(Incoming, msg.c_str(), strlen(msg.c_str()), 0);
+
+			//Get the address of remote host
+			char remote_host[INET_ADDRSTRLEN]; 
+			inet_ntop(AF_INET, &(client_addr.sin_addr), remote_host, INET_ADDRSTRLEN);
+
+			cout << "Connection rejected" << endl;
+		}
+
+
+
 	}
 	return 0;
 }
