@@ -8,6 +8,7 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include "sha256.h"
 
 #define MSG_LEN 100
 #define MAX_CLIENTS 2
