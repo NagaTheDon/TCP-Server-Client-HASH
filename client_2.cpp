@@ -75,6 +75,8 @@ int main(int argc, char** argv)
 	}
 
 	cout << "Connected! " << endl;
+	std::string sent_message = ""; /**< String with message to send*/
+	int ret = 0; /**< Return Send value*/
 	recv(client.sockfd, client.received_message, MSG_LEN, 0);
 	message = client.received_message;
 
@@ -82,6 +84,37 @@ int main(int argc, char** argv)
 	{
 		client.id = atoi(client.received_message); // First message is the ID
 
+		while(1)
+		{
+			cout << "Enter a string to HASH: ";
+			getline(cin, sent_message);
+
+			ret = send(client.sockfd, sent_message.c_str(), strlen(sent_message.c_str()), 0);
+
+			if(ret <= 0)
+			{
+				cout << "[-] Send() failed " << endl;
+				break;
+			}
+
+			if(strcmp(sent_message, ":exit") == 0)
+			{
+				perror("[-] Disconnected from server \n");
+				exit(1);
+			}
+
+			if(recv(client.sockfd, client.received_message, MSG_LEN, 0) < 0)
+			{
+				perror("[-] Error receiving data. \n");
+			}
+			else
+			{
+				cout << "Hashed Value: " << client.received_message << endl;
+			}
+
+			bzero(client.received_message, MSG_LEN);
+			sent_message = "";
+		}
 
 	}
 
