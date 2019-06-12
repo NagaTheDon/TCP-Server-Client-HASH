@@ -23,20 +23,43 @@ struct client_type
 };
 
 
-int ClientProcessor(client_type &new_client)
+int ClientProcessor(client_type &new_client, std::vector<client_type> &client_array, std::thread &client_thread)
 {
 	char charMsg[MSG_LEN] = ""; 
 	std::string msg = "";
 
 	while(1)
 	{
-		memset(charMsg, 0, MSG_LEN)
+		memset(charMsg, 0, MSG_LEN);
 		if(new_client.sockfd != 0)
 		{
 			int SentFlag = recv(new_client.sockfd, charMsg, MSG_LEN, 0);
 
+			if(SentFlag != SOCKET_ERROR) {
+				if(strcmp("", charMsg) != 0)
+				{
+					msg = "Client ID: "+ to_string(new_client.id) + " --> " + charMsg ;
+				}
+
+				cout << msg << endl;
+
+				SentFlag = send(new_client.sockfd, msg.c_str(), strlen(msg.c_str()), 0);
+			}
+
+		}
+
+		else
+		{
+			cout << "Client #" << to_string(new_client.id) << " disconnected" << endl;
+			close(new_client.sockfd);
+			close(client_array[new_client.id].sockfd);
+			client_array[new_client.id].sockfd = INVALID_SOCKET;
+
+			break;
 		}
 	}
+	client_thread.detach();
+	return 0;
 }
 
 int main(int argc, char** argv)
@@ -136,7 +159,9 @@ int main(int argc, char** argv)
 			send(client[ID_Assign].sockfd, msg.c_str(), strlen(msg.c_str()));
 
 			client_threads[temp_id] = std::thread(
-				ClientProcessor, std::ref(client[ID_Assign]));
+				ClientProcessor, std::ref(client[ID_Assign]), 
+								 std::ref(client),
+								 std::ref(client_threads[ID_Assign]));
 		}
 
 		else // Server is full 
@@ -151,8 +176,14 @@ int main(int argc, char** argv)
 			cout << "Connection rejected" << endl;
 		}
 
+	}
 
+	close(sockfd);
 
+	for(int i = 0; i < MAX_CLIENTS; i++)
+	{
+		client_threads[i].detach();
+		close(client[i].sockfd);
 	}
 	return 0;
 }
