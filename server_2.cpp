@@ -23,6 +23,22 @@ struct client_type
 };
 
 
+int ClientProcessor(client_type &new_client)
+{
+	char charMsg[MSG_LEN] = ""; 
+	std::string msg = "";
+
+	while(1)
+	{
+		memset(charMsg, 0, MSG_LEN)
+		if(new_client.sockfd != 0)
+		{
+			int SentFlag = recv(new_client.sockfd, charMsg, MSG_LEN, 0);
+
+		}
+	}
+}
+
 int main(int argc, char** argv)
 {
 	if(argc < 2)
@@ -94,6 +110,7 @@ int main(int argc, char** argv)
 
 		ID_Assign = -1;
 
+
 		for(int i = 0; i < MAX_CLIENTS; i++)
 		{
 			// If a client hasn't been added to the list of clients
@@ -112,7 +129,14 @@ int main(int argc, char** argv)
 
 		if(ID_Assign != -1) // If max. clients are not reached
 		{
-			char remote_host[INET_ADDRSTRLEN];
+			cout << "Connected! There are " << NumClients << " clients in this server." << endl;
+
+			// Send the ID to the new client
+			msg = to_string(client[ID_Assign].id); 
+			send(client[ID_Assign].sockfd, msg.c_str(), strlen(msg.c_str()));
+
+			client_threads[temp_id] = std::thread(
+				ClientProcessor, std::ref(client[ID_Assign]));
 		}
 
 		else // Server is full 
