@@ -66,7 +66,43 @@ int main(int argc, char** argv)
 
 	server_addr.sin_port = htons(port_no); // Setting the port number
 
-	
+	/** Attempting to connect*/
+	cout << "Connecting to " << (char *)server->h_addr << " : " << port_no << endl; 
+	if(connect(client.sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0)
+	{
+		perror("[-] Error connecting to server");
+		return -5;
+	}
+
+	cout << "Connected! " << endl;
+	recv(client.sockfd, client.received_message, MSG_LEN, 0);
+	message = client.received_message;
+
+	if(message != "Server is full")
+	{
+		client.id = atoi(client.received_message); // First message is the ID
+
+
+	}
+
+	else
+	{
+		cout << client.received_message << endl;
+	}
+
+
+	/** Socket Closure*/
+	cout << "Closing socket ..." << endl;
+	ret = shutdown(client.sockfd, SHUT_WR);
+
+	if(ret == SOCKET_ERROR)
+	{
+		cout << "Shutdown failed " << endl;
+		close(client.sockfd);
+		return -4;
+	}
+
+	close(client.sockfd);
 
 	return 0;
 }
