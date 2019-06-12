@@ -35,6 +35,7 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 	while(1)
 	{
 		memset(charMsg, 0, MSG_LEN);
+    msg = "";
 		if(new_client.sockfd != 0)
 		{
 			int SentFlag = recv(new_client.sockfd, charMsg, MSG_LEN, 0);
@@ -42,7 +43,9 @@ int ClientProcessor(client_type &new_client, std::vector<client_type> &client_ar
 			if(SentFlag != SOCKET_ERROR) {
 				if(strcmp("", charMsg) != 0)
 				{
-					msg = "Client ID: "+ to_string(new_client.id) + " --> " + charMsg ;
+					// msg = "Client ID: "+ to_string(new_client.id) + " --> " + charMsg ;
+          msg = sha256(charMsg);
+
           cout << msg << endl;
           SentFlag = send(new_client.sockfd, msg.c_str(), strlen(msg.c_str()), 0);
           continue;

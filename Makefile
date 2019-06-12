@@ -4,7 +4,7 @@ CC=g++
 CFLAGS=-Wall -pthread -std=c++11
 
 server:
-	$(CC) $(CFLAGS) -o server server.cpp
+	$(CC) $(CFLAGS) -o server server.cpp sha256.cpp
 client:
 	$(CC) $(CFLAGS) -o client client.cpp
 all: server client
